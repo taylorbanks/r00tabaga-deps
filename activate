@@ -1,0 +1,30 @@
+#!/bin/bash
+# Copyright 2013 Adam Bregenzer <adam@bregenzer.net>
+
+# Can pass an optional path prefix - useful when preparing the root filesystem
+PREFIX=$2
+
+# Migrate to specified type
+TYPE=$(echo ${1:0:1}|awk '{print tolower($0)}')
+if [[ $TYPE =~ [mpk] ]]; then
+    for x in /etc/config/dhcp\
+             /etc/config/firewall\
+             /etc/config/network\
+             /etc/config/uhttpd\
+             /etc/config/wireless\
+             /etc/rc.local; do
+        cp ${PREFIX}${x}.${TYPE} ${PREFIX}${x}
+    done
+fi
+
+# Restart web server
+echo "Restarting web server"
+/etc/init.d/uhttpd stop
+/etc/init.d/uhttpd start
+
+# Reboot?
+echo "Reboot? (y/n):"
+read CONTINUE
+if [[ $CONTINUE =~ [yY] ]]; then
+  reboot
+fi
